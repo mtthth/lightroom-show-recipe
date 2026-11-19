@@ -43,7 +43,11 @@ local function settingsText(entry)
         return text
     end
     local text = Format.describe(entry.data)
-    text.recipe, text.recipeDetail = Format.recipe(entry.match)
+    if entry.match then
+        text.recipe, text.recipeDetail = Format.recipe(entry.match)
+    else
+        text.recipe, text.recipeDetail = '', ''
+    end
     return text
 end
 
@@ -56,7 +60,10 @@ function M.readEntry(photo, path)
     local ok, message = pcall(function()
         if camera.fuji then
             entry.data, entry.code, entry.message = Reader.readWithCompanion(path)
-            if entry.data then
+            -- A raw file is not rendered with the camera settings: they describe the shot,
+            -- but no recipe applies to it. Only the camera's JPEG carries one.
+            entry.raw = type(path) == 'string' and path:lower():match('%.raf$') ~= nil
+            if entry.data and not entry.raw then
                 entry.match = RecipeMatch.find(RecipeBook.current().recipes, Format.settings(entry.data))
             end
         elseif makerNotes[camera.brand] then
@@ -97,7 +104,8 @@ function M.panelFields(entry)
         return {
             recipe = text.recipe, settings = joined(text.first, text.second),
             details = joined(text.recipeDetail, text.details),
-            note = entry.data.fromCompanion and 'Réglages lus dans le RAF associé.' or '',
+            note = entry.raw and 'Fichier RAW : pas de recette, elle ne s’applique qu’au JPEG du boîtier.'
+                or entry.data.fromCompanion and 'Réglages lus dans le RAF associé.' or '',
         }
     end
     return {

@@ -81,6 +81,8 @@ chacune.
   catalogue si le module est retiré.
 - Fuji : lecture des EXIF/MakerNotes des JPEG et de l'aperçu JPEG des RAF. Si un JPEG
   a perdu ses MakerNotes, le RAF de même nom dans le même dossier est lu à la place.
+  Une photo RAF reçoit ses réglages mais pas de recette : un RAW n'est pas développé
+  avec eux, seul le JPEG du boîtier l'est.
   Décalages de balance des blancs validés sur X-T5 ; autres générations à vérifier.
   Les réglages N&B WC/MG ne sont pas comparés.
 - Panasonic : JPEG uniquement (les RW2 ne sont pas lus). Le codage du bruit varie

@@ -202,6 +202,23 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(self.g.writeCount, 2)  # nothing to show for a camera without a reader
         self.assertIsNone(self.g.stored['sony.JPG'])
 
+    def test_a_raw_file_gets_its_settings_but_no_recipe(self):
+        reala = ("{ model = 'X-T5', tags = { [0x1401] = 0xb00, [0x1003] = 0x80, [0x1402] = 0, "
+            "[0x140b] = 200, [0x1002] = 0, [0x100a] = {0, 0}, [0x1041] = 0, [0x1040] = 0, [0x1001] = 3, "
+            "[0x100e] = 0x280, [0x100f] = 0, [0x1047] = 32, [0x104c] = 16, [0x1048] = 32, [0x104e] = 32 } }")
+        for path in ['DSCF5790.RAF', 'dscf5791.raf']:
+            with self.subTest(path=path):
+                self.run_lua("stored['" + path + "'] = { recipe = 'Ancienne recette' }; "
+                    "readOverrides['" + path + "'] = function() return " + reala + " end; "
+                    "controller.start(); selectPhoto('" + path + "', 'FUJIFILM'); step()")
+                fields = self.g.stored[path]
+                self.assertIsNone(fields.recipe)
+                self.assertTrue(fields.settings.startswith('REALA ACE'))
+                self.assertTrue(fields.details.startswith('Grain '))
+                self.assertIn('RAW', fields.note)
+        self.run_lua("selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
+        self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
+
     def test_offline_original_keeps_what_an_earlier_reading_wrote(self):
         self.run_lua("stored['missing.JPG'] = { recipe = 'Reala Everyday', settings = 'REALA ACE' }; "
             "controller.start(); selectPhoto('missing.JPG', 'FUJIFILM'); step()")

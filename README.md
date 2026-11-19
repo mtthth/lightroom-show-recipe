@@ -96,7 +96,9 @@ The columns `mono_color_wc`, `mono_color_mg`, `iso_max`, `exposure_comp`, `usage
   undo history entry, nothing in XMP or exports. A field is written only when its value
   changes. The fields stay in the catalog if the plug-in is removed.
 - **Fuji**: EXIF/MakerNotes of JPEG files and of the JPEG preview in RAF files. If a JPEG has
-  lost its MakerNotes, the RAF with the same name in the same folder is read instead. White
+  lost its MakerNotes, the RAF with the same name in the same folder is read instead. A RAF
+  photo gets its settings but no recipe: a raw file is not rendered with them, only the
+  camera's JPEG is. White
   balance shifts are validated on the X-T5; other generations still need checking.
   Monochrome WC/MG are not compared.
 - **Panasonic**: JPEG only (RW2 is not read). **Canon**: JPEG only (CR2/CR3 are not read).
