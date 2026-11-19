@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / '.test-deps'))
 from lupa.lua51 import LuaRuntime
 
-CSV = ROOT / 'fuji-recipe.lrplugin' / 'recipes.csv'
+CSV = ROOT / 'show-recipe.lrplugin' / 'recipes.csv'
 
 # Independent encoding of the CSV vocabulary as MakerNotes values (X-T5).
 FILM_MODES = {
@@ -74,7 +74,7 @@ def tags_for(lua, row):
 class RecipeTests(unittest.TestCase):
     def setUp(self):
         self.lua = LuaRuntime(unpack_returned_tuples=True, encoding='utf-8')
-        plugin = ROOT / 'fuji-recipe.lrplugin'
+        plugin = ROOT / 'show-recipe.lrplugin'
         self.format = self.lua.execute((plugin / 'FujiFormat.lua').read_text(encoding='utf-8'))
         self.match = self.lua.execute((plugin / 'RecipeMatch.lua').read_text(encoding='utf-8'))
         self.csv = self.lua.execute((plugin / 'RecipeCsv.lua').read_text(encoding='utf-8'))

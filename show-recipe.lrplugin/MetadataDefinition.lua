@@ -13,5 +13,5 @@ return {
         { id = 'noise', title = 'Bruit, clarté', dataType = 'string', readOnly = true },
         { id = 'note', title = 'Remarque', dataType = 'string', readOnly = true },
     },
-    schemaVersion = 2,
+    schemaVersion = 1,
 }

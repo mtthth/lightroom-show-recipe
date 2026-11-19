@@ -62,7 +62,7 @@ def jpeg_fixture(endian='<', make=b'Canon\0', blocks=None, notes=True, misplaced
 class CanonTests(unittest.TestCase):
     def setUp(self):
         self.lua = runtime(unpack_returned_tuples=True, encoding='utf-8')
-        plugin = ROOT / 'fuji-recipe.lrplugin'
+        plugin = ROOT / 'show-recipe.lrplugin'
         self.reader = self.lua.execute((plugin / 'CanonReader.lua').read_text(encoding='utf-8'))
         self.format = self.lua.execute((plugin / 'CanonFormat.lua').read_text(encoding='utf-8'))
         self.tmp = tempfile.TemporaryDirectory()

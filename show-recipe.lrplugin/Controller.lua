@@ -138,10 +138,10 @@ function M.writeFields(catalog, items)
 end
 
 function M.start()
-    local existing = _G.fujiRecipeController
+    local existing = _G.showRecipeController
     if existing and not existing.stopped then return existing end
     local state = { stopped = false, force = true }
-    _G.fujiRecipeController = state
+    _G.showRecipeController = state
     state.stop = function() state.stopped = true end
 
     LrFunctionContext.postAsyncTaskWithContext('Suivi de la photo active', function(context)
@@ -222,7 +222,7 @@ function M.fillSelection()
             if progress:isCanceled() then break end
             local path = photo:getRawMetadata('path')
             local entry = M.readEntry(photo, path)
-            local state = _G.fujiRecipeController
+            local state = _G.showRecipeController
             if state and not state.stopped and state.cacheEntry then state.cacheEntry(path, entry) end
             local fields = M.panelFields(entry)
             if fields then batch[#batch + 1] = { photo = photo, fields = fields } else skipped = skipped + 1 end

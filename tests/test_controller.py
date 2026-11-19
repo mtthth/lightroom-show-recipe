@@ -11,7 +11,7 @@ from lupa.lua51 import LuaRuntime
 class ControllerTests(unittest.TestCase):
     def setUp(self):
         self.lua = LuaRuntime(unpack_returned_tuples=True)
-        self.lua.globals().pluginPath = str(ROOT / 'fuji-recipe.lrplugin').replace('\\', '/')
+        self.lua.globals().pluginPath = str(ROOT / 'show-recipe.lrplugin').replace('\\', '/')
         self.lua.execute('''
             jobs, prefs, recipeStamp = {}, {}, 0
             readCount, writeCount = 0, 0
@@ -181,7 +181,7 @@ class ControllerTests(unittest.TestCase):
         self.run_lua("selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
         self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
         self.run_lua("dofile(pluginPath .. '/Shutdown.lua'); step()")
-        self.assertTrue(self.g.fujiRecipeController.stopped)
+        self.assertTrue(self.g.showRecipeController.stopped)
         self.run_lua("dofile(pluginPath .. '/Startup.lua')")
         self.assertEqual(len(self.g.jobs), 2)
 
@@ -274,7 +274,7 @@ class ControllerTests(unittest.TestCase):
                 self.assertIn('illisibles', self.g.stored[path].note)
                 self.run_lua("selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
                 self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
-                self.assertFalse(self.g.fujiRecipeController.stopped)
+                self.assertFalse(self.g.showRecipeController.stopped)
 
     def test_unreadable_settings_clear_the_fields_and_give_the_reason(self):
         self.run_lua("stored['stripped.JPG'] = { recipe = 'Reala Everyday', settings = 'REALA ACE' }; "
@@ -365,7 +365,7 @@ class ControllerTests(unittest.TestCase):
 
     def test_chosen_recipe_file_is_used_and_reread_when_it_changes(self):
         import tempfile
-        source = (ROOT / 'fuji-recipe.lrplugin' / 'recipes.csv').read_text(encoding='utf-8')
+        source = (ROOT / 'show-recipe.lrplugin' / 'recipes.csv').read_text(encoding='utf-8')
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'mes recettes.csv'
             path.write_text(source.replace('Reala Everyday,', 'Ma Reala,'), encoding='utf-8')

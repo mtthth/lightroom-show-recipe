@@ -39,7 +39,7 @@ def jpeg_fixture(endian='<', make=b'Panasonic\0', tags=None, notes=True):
 class PanasonicTests(unittest.TestCase):
     def setUp(self):
         self.lua = runtime(unpack_returned_tuples=True, encoding='utf-8')
-        plugin = ROOT / 'fuji-recipe.lrplugin'
+        plugin = ROOT / 'show-recipe.lrplugin'
         self.reader = self.lua.execute((plugin / 'PanasonicReader.lua').read_text(encoding='utf-8'))
         self.format = self.lua.execute((plugin / 'PanasonicFormat.lua').read_text(encoding='utf-8'))
         self.tmp = tempfile.TemporaryDirectory()

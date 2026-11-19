@@ -1,4 +1,4 @@
-# Fuji Recipe for Lightroom Classic
+# show-recipe for Lightroom Classic
 
 *[Version française](README.fr.md)*
 
@@ -20,14 +20,18 @@ Panasonic, Canon, iPhone and Ricoh GR settings are read too.
 
 ## Installation
 
-1. Download `fuji-recipe.lrplugin.zip` from the
+1. Download `show-recipe.lrplugin.zip` from the
    [latest release](https://github.com/mtthth/lightroom-show-recipe/releases/latest) and unzip it.
 2. Lightroom Classic → File → **Plug-in Manager** → **Add**, and choose the
-   `fuji-recipe.lrplugin` folder.
+   `show-recipe.lrplugin` folder.
 3. In the Library, open the menu at the top of the Metadata panel and choose
    **Appareil photo et recette**.
 
 To update, replace the folder and click **Reload Plug-in** in the Plug-in Manager.
+
+Coming from a version before 1.0 (named *Appareil photo et recette Fuji*): remove it in the
+Plug-in Manager, add `show-recipe.lrplugin`, restart Lightroom, then run the selection
+command below on your photos. The fields of the old version stay hidden in the catalog.
 
 ## The Metadata panel
 
@@ -131,4 +135,4 @@ python -m unittest discover -s tests -p "test_*.py"
 ## Licence
 
 [MIT](LICENSE). Recipe settings are credited to their authors in the `source` column of
-[recipes.csv](fuji-recipe.lrplugin/recipes.csv).
+[recipes.csv](show-recipe.lrplugin/recipes.csv).

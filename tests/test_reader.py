@@ -48,7 +48,7 @@ def raf_fixture(jpeg):
 class ReaderTests(unittest.TestCase):
     def setUp(self):
         self.lua = runtime(unpack_returned_tuples=True, encoding='utf-8')
-        plugin = ROOT / 'fuji-recipe.lrplugin'
+        plugin = ROOT / 'show-recipe.lrplugin'
         self.reader = self.lua.execute((plugin / 'FujiReader.lua').read_text(encoding='utf-8'))
         self.format = self.lua.execute((plugin / 'FujiFormat.lua').read_text(encoding='utf-8'))
         self.tmp = tempfile.TemporaryDirectory()
@@ -134,7 +134,7 @@ class ReaderTests(unittest.TestCase):
 
     def test_all_plugin_files_compile_as_lua51(self):
         compiler = self.lua.eval('function(code, name) local f, err = loadstring(code, name); assert(f, err) end')
-        for path in (ROOT / 'fuji-recipe.lrplugin').glob('*.lua'):
+        for path in (ROOT / 'show-recipe.lrplugin').glob('*.lua'):
             compiler(path.read_text(encoding='utf-8'), path.name)
 
 

@@ -1,4 +1,4 @@
-# Recette Fuji — module externe pour Lightroom Classic
+# show-recipe — module externe pour Lightroom Classic
 
 *[English version](README.md)*
 
@@ -12,15 +12,20 @@ couleur, grain, Color Chrome, netteté, bruit, clarté) et les compare aux recet
 
 ## Installation
 
-1. Télécharger `fuji-recipe.lrplugin.zip` dans la
+1. Télécharger `show-recipe.lrplugin.zip` dans la
    [dernière version](https://github.com/mtthth/lightroom-show-recipe/releases/latest) et le décompresser.
 2. Lightroom Classic → Fichier → **Gestionnaire de modules externes** → **Ajouter**.
-3. Choisir le dossier `fuji-recipe.lrplugin`.
+3. Choisir le dossier `show-recipe.lrplugin`.
 4. Bibliothèque, panneau Métadonnées : choisir **Appareil photo et recette** dans le
    menu en tête du panneau, puis naviguer entre les photos.
 
 Pour une mise à jour : remplacer le dossier, puis dans le Gestionnaire de modules
 externes, sélectionner le module et cliquer sur **Charger de nouveau le module ext.**
+
+En venant d'une version antérieure à la 1.0 (nommée *Appareil photo et recette Fuji*) :
+la retirer dans le Gestionnaire, ajouter `show-recipe.lrplugin`, redémarrer Lightroom,
+puis lancer la commande de sélection ci-dessous sur les photos. Les champs de l'ancienne
+version restent masqués dans le catalogue.
 
 ## Panneau Métadonnées
 
@@ -72,7 +77,7 @@ Les colonnes du CSV sont décrites dans le [README anglais](README.md#csv-format
 
 La plupart des recettes fournies viennent de [Fuji X Weekly](https://fujixweekly.com/)
 (Ritchie Roesch et contributeurs) ; la colonne `source` de
-[recipes.csv](fuji-recipe.lrplugin/recipes.csv) indique l'origine de
+[recipes.csv](show-recipe.lrplugin/recipes.csv) indique l'origine de
 chacune.
 
 ## Fonctionnement et limites

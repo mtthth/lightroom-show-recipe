@@ -9,7 +9,7 @@ from lupa.lua51 import LuaRuntime
 
 def runtime(**options):
     lua = LuaRuntime(**options)
-    lua.globals().pluginPath = str(ROOT / 'fuji-recipe.lrplugin').replace('\\', '/')
+    lua.globals().pluginPath = str(ROOT / 'show-recipe.lrplugin').replace('\\', '/')
     lua.execute('''
         _PLUGIN = { path = pluginPath }
         import = function(name)

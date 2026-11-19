@@ -36,7 +36,7 @@ def jpeg_fixture(endian='<', make=b'Apple\0', tags=None, exif=True):
 class ModeTests(unittest.TestCase):
     def setUp(self):
         self.lua = runtime(unpack_returned_tuples=True, encoding='utf-8')
-        plugin = ROOT / 'fuji-recipe.lrplugin'
+        plugin = ROOT / 'show-recipe.lrplugin'
         self.reader = self.lua.execute((plugin / 'ModeReader.lua').read_text(encoding='utf-8'))
         self.format = self.lua.execute((plugin / 'ModeFormat.lua').read_text(encoding='utf-8'))
         self.tmp = tempfile.TemporaryDirectory()
