@@ -388,7 +388,7 @@ class ControllerTests(unittest.TestCase):
         ''')
         fields = list(self.g.definition.metadataFieldsForPhotos.values())
         ids = [field.id for field in fields]
-        self.assertEqual(ids, ['recipe', 'source', 'settings', 'adjustments', 'effects', 'noise', 'note'])
+        self.assertEqual(ids, ['recipe', 'settings', 'adjustments', 'effects', 'noise', 'note', 'source'])
         self.assertTrue(all(field.title and field.readOnly for field in fields))
         prefix = self.g.info.LrToolkitIdentifier + '.'
         items = [item if isinstance(item, str) else item[1]

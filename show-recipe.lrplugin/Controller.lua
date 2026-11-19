@@ -24,7 +24,7 @@ local makerNotes = {
 -- Brands without a maker-note reader whose standard Exif settings name a shooting mode.
 local modeBrands = { apple = { label = 'Apple' }, ricoh = { label = 'Ricoh' } }
 -- Fields of MetadataDefinition.lua.
-local fieldIds = { 'recipe', 'source', 'settings', 'adjustments', 'effects', 'noise', 'note' }
+local fieldIds = { 'recipe', 'settings', 'adjustments', 'effects', 'noise', 'note', 'source' }
 local retryDelay = 5 -- Do not repeatedly open an offline original on every 350 ms tick.
 local M = {}
 

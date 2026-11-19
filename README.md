@@ -39,9 +39,9 @@ The **Appareil photo et recette** preset shows Lightroom's own fields (file name
 lens, exposure, ISO, focal length, date), followed by the plug-in's fields, one line each
 (Lightroom shows only the first line of a read-only field):
 
-- **Recette**: the recipe name, or *Recette non identifiée* (no recipe recognized), for
-  JPEG and RAF files alike.
-- **Source**: where the recipe comes from, or the closest recipe and what differs.
+- **Recette**: the recipe name as written in the CSV, followed by the photo's dynamic range
+  in parentheses when it differs from the recipe's (*Kodak Gold 200 (DR100)*); or
+  *Recette non identifiée* (no recipe recognized). JPEG and RAF files alike.
 - **Réglages**: on Fuji, film simulation, dynamic range or DR priority and white balance.
   On Panasonic and Canon: photo style and white balance. On Ricoh: white balance.
 - **Ajustements**: on Fuji, highlight, shadow, colour and sharpness. On other brands: the
@@ -50,6 +50,7 @@ lens, exposure, ISO, focal length, date), followed by the plug-in's fields, one 
 - **Bruit, clarté** (Fuji): noise reduction, clarity, white balance shift.
 - **Remarque**: the settings were read from the companion RAF, or why they could not be
   read; on Panasonic and Canon, every adjustment including those at zero.
+- **Source**: where the recipe comes from, or the closest recipe and what differs.
 
 Fields are filled when a photo becomes the active photo. To fill a whole folder or
 collection at once, select the photos and choose Library → Plug-in Extras →
@@ -60,9 +61,14 @@ search, and **Recette** appears in the Library Filter's Metadata columns.
 ## Recipes
 
 A recipe is recognized when every setting given in the CSV is equal. An empty cell is not
-compared. A recipe that differs **only by its dynamic range** (DR100/200/400/Auto) is still
-recognized; *Source* then says which DR the photo used. When no recipe matches,
-*Source* names the closest one (at most three differences) and the settings that differ.
+compared. Two differences still name the recipe:
+
+- the **dynamic range** (DR100/200/400/Auto), chosen for the light of the scene; *Recette*
+  then shows the photo's DR in parentheses;
+- a **clarity above the recipe's** (for instance 0 for a recipe at −2): clarity slows the
+  camera down, so it is often set closer to 0. A clarity below the recipe's is a difference.
+
+When no recipe matches, *Source* names the closest one (at most three differences) and the settings that differ.
 
 ### Using your own recipes
 

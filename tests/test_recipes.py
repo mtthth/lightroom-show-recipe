@@ -231,9 +231,25 @@ class RecipeTests(unittest.TestCase):
         result = self.find(tags)
         self.assertEqual(len(result.matches), 0)
         line, detail = self.format.recipe(result)
-        self.assertEqual(line, row['nom'])
-        self.assertEqual(detail, row['source'] + ' · DR100 au lieu de DR400')
+        self.assertEqual(line, row['nom'] + ' (DR100)')
+        self.assertEqual(detail, row['source'])
+        tags[0x1402], tags[0x140b] = 0, 200
+        self.assertEqual(self.format.recipe(self.find(tags))[0], row['nom'] + ' (DR AUTO)')
         tags[0x1001] = SHARPNESS[4] if row['sharpness'] != '4' else SHARPNESS[-4]
+        self.assertEqual(self.format.recipe(self.find(tags))[0], 'Recette non identifiée')
+
+    def test_a_clarity_above_the_recipe_is_accepted_not_below(self):
+        row = next(r for r in self.rows if r['clarity'] and int(r['clarity']) < 0
+            and r['dynamic_range'] == 'DR400' and r['dr_priority'] == 'Off')
+        tags = tags_for(self.lua, row)
+        for clarity, expected in [(0, row['nom']), (int(row['clarity']) + 1, row['nom']),
+                                  (int(row['clarity']) - 1, 'Recette non identifiée')]:
+            with self.subTest(clarity=clarity):
+                tags[0x100f] = clarity * 1000
+                self.assertEqual(self.format.recipe(self.find(tags))[0], expected)
+        tags[0x100f], tags[0x1403] = 0, 200  # both tolerances at once
+        self.assertEqual(self.format.recipe(self.find(tags))[0], row['nom'] + ' (DR200)')
+        tags.pop(0x100f)  # an unread clarity is not above anything
         self.assertEqual(self.format.recipe(self.find(tags))[0], 'Recette non identifiée')
 
     def test_an_exact_recipe_wins_over_one_differing_by_dr(self):

@@ -14,11 +14,11 @@ return {
         'com.adobe.separator',
         { 'com.adobe.label', label = 'Réglages du boîtier' },
         'io.github.mtthth.show-recipe.recipe',
-        'io.github.mtthth.show-recipe.source',
         'io.github.mtthth.show-recipe.settings',
         'io.github.mtthth.show-recipe.adjustments',
         'io.github.mtthth.show-recipe.effects',
         'io.github.mtthth.show-recipe.noise',
         'io.github.mtthth.show-recipe.note',
+        'io.github.mtthth.show-recipe.source',
     },
 }

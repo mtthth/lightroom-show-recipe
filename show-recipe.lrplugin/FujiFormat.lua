@@ -124,24 +124,24 @@ local function drText(dr)
     return dr and ('DR' .. tostring(dr)) or 'DR ?'
 end
 
--- Recipe and Source fields, one line each, for a RecipeMatch.find result. A recipe that
--- differs only by its dynamic range is still named; Source says which DR the photo used.
+-- Recipe and Source fields, one line each, for a RecipeMatch.find result. A recipe matched
+-- with a tolerated difference is still named; when the photo's DR differs from the recipe's,
+-- it follows the name in parentheses: "Kodak Gold 200 (DR100)".
 -- Without a recipe, Source names the closest one and what differs.
 function M.recipe(result)
     local names, sources, seen = {}, {}, {}
-    local function add(recipe, note)
-        names[#names + 1] = recipe.name
-        local source = (recipe.source or '') .. (note or '')
-        if source ~= '' and not seen[source] then
-            seen[source] = true
-            sources[#sources + 1] = source
+    local function add(recipe)
+        local name = recipe.name
+        if recipe.dr ~= nil and recipe.dr ~= result.dr then name = name .. ' (' .. drText(result.dr) .. ')' end
+        names[#names + 1] = name
+        if recipe.source and not seen[recipe.source] then
+            seen[recipe.source] = true
+            sources[#sources + 1] = recipe.source
         end
     end
     for _, recipe in ipairs(result.matches) do add(recipe) end
     if #names == 0 then
-        for _, recipe in ipairs(result.drMatches or {}) do
-            add(recipe, (recipe.source and ' · ' or '') .. drText(result.dr) .. ' au lieu de ' .. drText(recipe.dr))
-        end
+        for _, recipe in ipairs(result.closeMatches or {}) do add(recipe) end
     end
     if #names > 0 then return table.concat(names, ' / '), table.concat(sources, ' / ') end
     if result.near then

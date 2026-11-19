@@ -6,12 +6,12 @@ return {
     metadataFieldsForPhotos = {
         { id = 'recipe', title = 'Recette', dataType = 'string', readOnly = true,
             searchable = true, browsable = true },
-        { id = 'source', title = 'Source', dataType = 'string', readOnly = true },
         { id = 'settings', title = 'Réglages', dataType = 'string', readOnly = true, searchable = true },
         { id = 'adjustments', title = 'Ajustements', dataType = 'string', readOnly = true, searchable = true },
         { id = 'effects', title = 'Effets', dataType = 'string', readOnly = true },
         { id = 'noise', title = 'Bruit, clarté', dataType = 'string', readOnly = true },
         { id = 'note', title = 'Remarque', dataType = 'string', readOnly = true },
+        { id = 'source', title = 'Source', dataType = 'string', readOnly = true },
     },
     schemaVersion = 1,
 }

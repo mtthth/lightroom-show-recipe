@@ -33,9 +33,9 @@ Le jeu de métadonnées **Appareil photo et recette** reprend des champs de Ligh
 (fichier, modèle, objectif, exposition, ISO, focale, date) puis les champs du module,
 d'une ligne chacun (Lightroom n'affiche que la première ligne d'un champ en lecture seule) :
 
-- **Recette** : nom de la recette Fuji, ou « Recette non identifiée », pour les JPEG
-  comme pour les RAF.
-- **Source** : origine de la recette, ou recette la plus proche et réglages qui diffèrent.
+- **Recette** : nom de la recette tel qu'écrit dans le CSV, suivi entre parenthèses du DR
+  de la photo s'il diffère de celui de la recette (« Kodak Gold 200 (DR100) ») ; ou
+  « Recette non identifiée ». Pour les JPEG comme pour les RAF.
 - **Réglages** : sur Fuji, simulation, plage dynamique ou priorité DR et balance des
   blancs. Sur Panasonic et Canon : style et balance des blancs. Sur Ricoh : balance des blancs.
 - **Ajustements** : sur Fuji, hautes lumières, ombres, couleur et netteté. Sur les autres
@@ -44,6 +44,7 @@ d'une ligne chacun (Lightroom n'affiche que la première ligne d'un champ en lec
 - **Bruit, clarté** (Fuji) : réduction du bruit, clarté, décalage de balance des blancs.
 - **Remarque** : lecture dans le RAF associé, ou raison pour laquelle les réglages
   n'ont pas été lus ; sur Panasonic et Canon, tous les ajustements, zéros compris.
+- **Source** : origine de la recette, ou recette la plus proche et réglages qui diffèrent.
 
 Les champs se remplissent quand une photo devient la photo active. Pour remplir d'un
 coup un dossier ou une collection : sélectionner les photos, puis Bibliothèque →
@@ -56,8 +57,14 @@ ensuite de critères dans les collections dynamiques et la recherche texte, et
 
 Une recette est reconnue quand tous les réglages renseignés dans le CSV sont égaux ;
 une case vide n'est pas comparée (tons et plage dynamique avec la priorité DR,
-couleur en noir et blanc). Une recette qui ne diffère **que par la plage dynamique**
-(DR100/200/400/Auto) est quand même reconnue ; Source indique alors le DR de la photo.
+couleur en noir et blanc). Deux écarts n'empêchent pas de nommer la recette :
+
+- la **plage dynamique** (DR100/200/400/Auto), choisie selon la lumière ; Recette
+  indique alors le DR de la photo entre parenthèses ;
+- une **clarté supérieure à celle de la recette** (par exemple 0 pour une recette à −2) :
+  la clarté ralentit le boîtier, on la laisse souvent plus près de 0. Une clarté
+  inférieure reste un écart.
+
 Les préréglages fluorescents 1, 2 et 3 et les intensités Weak et Strong de la priorité
 DR sont distingués. Si aucune recette ne correspond, Source donne la plus proche
 (trois écarts au plus). Plusieurs recettes identiques s'affichent séparées par « / ».
