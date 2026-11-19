@@ -215,7 +215,7 @@ class ControllerTests(unittest.TestCase):
                 self.assertIsNone(fields.recipe)
                 self.assertTrue(fields.settings.startswith('REALA ACE'))
                 self.assertTrue(fields.details.startswith('Grain '))
-                self.assertIn('RAW', fields.note)
+                self.assertIsNone(fields.note)
         self.run_lua("selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
         self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
 

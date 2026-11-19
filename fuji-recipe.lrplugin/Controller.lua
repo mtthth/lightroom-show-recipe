@@ -104,8 +104,7 @@ function M.panelFields(entry)
         return {
             recipe = text.recipe, settings = joined(text.first, text.second),
             details = joined(text.recipeDetail, text.details),
-            note = entry.raw and 'Fichier RAW : pas de recette, elle ne s’applique qu’au JPEG du boîtier.'
-                or entry.data.fromCompanion and 'Réglages lus dans le RAF associé.' or '',
+            note = entry.data.fromCompanion and 'Réglages lus dans le RAF associé.' or '',
         }
     end
     return {
