@@ -14,8 +14,11 @@ return {
         'com.adobe.separator',
         { 'com.adobe.label', label = 'Réglages du boîtier' },
         'fr.matthieu.fuji-recipe.recipe',
+        'fr.matthieu.fuji-recipe.source',
         'fr.matthieu.fuji-recipe.settings',
-        { 'fr.matthieu.fuji-recipe.details', height_in_lines = 2 },
+        'fr.matthieu.fuji-recipe.adjustments',
+        'fr.matthieu.fuji-recipe.effects',
+        'fr.matthieu.fuji-recipe.noise',
         'fr.matthieu.fuji-recipe.note',
     },
 }

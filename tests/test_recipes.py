@@ -120,7 +120,7 @@ class RecipeTests(unittest.TestCase):
         self.assertEqual(list(result.differences.values()), ['Netteté'])
         line, detail = self.format.recipe(result)
         self.assertEqual(line, 'Recette non identifiée')
-        self.assertIn('Plus proche : Reggie\'s Portra (écarts : Netteté)', detail)
+        self.assertEqual(detail, 'Plus proche : Reggie\'s Portra (écarts : Netteté)')
 
     def test_priority_dr_must_agree(self):
         row = next(r for r in self.rows if r['dr_priority'] == 'Strong')
@@ -182,7 +182,7 @@ class RecipeTests(unittest.TestCase):
         self.assertEqual(len(result.matches), 0)
         self.assertIsNone(result.near)
         self.assertEqual(self.format.recipe(result), ('Recette non identifiée',
-            'Aucune recette connue ne correspond exactement à ces réglages.'))
+            'Aucune recette proche'))
 
     def test_identical_recipes_are_all_listed(self):
         twin = dict(self.recipes[1].items())
@@ -193,7 +193,7 @@ class RecipeTests(unittest.TestCase):
         result = self.match.find(recipes, settings)
         line, detail = self.format.recipe(result)
         self.assertEqual(line, self.rows[0]['nom'] + ' / Jumelle')
-        self.assertIn('Recette : ' + self.rows[0]['nom'] + ' · ' + self.rows[0]['source'], detail)
+        self.assertEqual(detail, self.rows[0]['source'])  # the same source once
 
     def test_csv_vocabulary_matches_the_makernotes_decoding(self):
         # Every film and white balance the builder accepts decodes to its label.
@@ -232,7 +232,7 @@ class RecipeTests(unittest.TestCase):
         self.assertEqual(len(result.matches), 0)
         line, detail = self.format.recipe(result)
         self.assertEqual(line, row['nom'])
-        self.assertIn(' · DR100 au lieu de DR400', detail)
+        self.assertEqual(detail, row['source'] + ' · DR100 au lieu de DR400')
         tags[0x1001] = SHARPNESS[4] if row['sharpness'] != '4' else SHARPNESS[-4]
         self.assertEqual(self.format.recipe(self.find(tags))[0], 'Recette non identifiée')
 

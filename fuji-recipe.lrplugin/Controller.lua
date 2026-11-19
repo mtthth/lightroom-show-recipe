@@ -24,7 +24,7 @@ local makerNotes = {
 -- Brands without a maker-note reader whose standard Exif settings name a shooting mode.
 local modeBrands = { apple = { label = 'Apple' }, ricoh = { label = 'Ricoh' } }
 -- Fields of MetadataDefinition.lua.
-local fieldIds = { 'recipe', 'settings', 'details', 'note' }
+local fieldIds = { 'recipe', 'source', 'settings', 'adjustments', 'effects', 'noise', 'note' }
 local retryDelay = 5 -- Do not repeatedly open an offline original on every 350 ms tick.
 local M = {}
 
@@ -39,14 +39,14 @@ local function settingsText(entry)
     local reader = makerNotes[entry.camera.brand]
     if reader then
         local text = reader.describe(entry.data)
-        text.recipe, text.recipeDetail = '', ''
+        text.recipe, text.source = '', ''
         return text
     end
     local text = Format.describe(entry.data)
     if entry.match then
-        text.recipe, text.recipeDetail = Format.recipe(entry.match)
+        text.recipe, text.source = Format.recipe(entry.match)
     else
-        text.recipe, text.recipeDetail = '', ''
+        text.recipe, text.source = '', ''
     end
     return text
 end
@@ -86,31 +86,37 @@ function M.readEntry(photo, path)
     return entry
 end
 
-local function joined(...)
-    local kept = {}
-    for i = 1, select('#', ...) do
-        local part = select(i, ...)
-        if part and part ~= '' then kept[#kept + 1] = part end
+local function lines(text)
+    local list = {}
+    for line in ((text or '') .. '\n'):gmatch('(.-)\n') do
+        if line ~= '' then list[#list + 1] = line end
     end
-    return table.concat(kept, '\n')
+    return list
 end
 
--- Values of the Metadata panel fields, or nil to leave them as they are: no identified camera,
--- or an original that cannot be opened (offline) and may have been read before.
+-- Values of the Metadata panel fields, one line each, or nil to leave them as they are: no
+-- identified camera, or an original that cannot be opened (offline) and may have been read before.
+-- Fuji: settings, then tones, colour and sharpness; its two detail lines are the effects and
+-- the noise line. Other brands: look, then mode and adjustments off normal; their full
+-- adjustments go to the note.
 function M.panelFields(entry)
     if not (entry and entry.known) or entry.code == 'unavailable' then return nil end
+    local fields = { recipe = '', source = '', settings = '', adjustments = '', effects = '', noise = '', note = '' }
     local text = entry.text
-    if text then
-        return {
-            recipe = text.recipe, settings = joined(text.first, text.second),
-            details = joined(text.recipeDetail, text.details),
-            note = entry.data.fromCompanion and 'Réglages lus dans le RAF associé.' or '',
-        }
+    if text and entry.camera.fuji then
+        local more = lines(text.details)
+        fields.recipe, fields.source = text.recipe, text.source
+        fields.settings, fields.adjustments = text.first, text.second
+        fields.effects, fields.noise = more[1] or '', more[2] or ''
+        fields.note = entry.data.fromCompanion and 'Réglages lus dans le RAF associé.' or ''
+    elseif text then
+        fields.settings, fields.adjustments = text.first, text.second
+        fields.note = table.concat(lines(text.details), ' · ')
+    else
+        fields.settings, fields.adjustments = entry.look or '', entry.mode or ''
+        fields.note = entry.message and ('Réglages ' .. readerLabel(entry.camera) .. ' : ' .. entry.message) or ''
     end
-    return {
-        recipe = '', settings = joined(entry.look, entry.mode), details = '',
-        note = entry.message and ('Réglages ' .. readerLabel(entry.camera) .. ' : ' .. entry.message) or '',
-    }
+    return fields
 end
 
 -- Writes the panel fields that differ from the catalog, for a list of { photo = , fields = }.

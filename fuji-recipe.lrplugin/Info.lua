@@ -15,5 +15,5 @@ return {
     },
     LrShutdownPlugin = 'Shutdown.lua',
     LrDisablePlugin = 'Shutdown.lua',
-    VERSION = { major = 0, minor = 12, revision = 2 },
+    VERSION = { major = 0, minor = 13, revision = 0 },
 }

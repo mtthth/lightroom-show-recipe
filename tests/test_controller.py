@@ -174,6 +174,7 @@ class ControllerTests(unittest.TestCase):
         self.assertIsNone(self.g.stored['sony.JPG'])
         self.run_lua("selectPhoto('first.JPG', 'FUJIFILM'); step(); selectPhoto(nil); step()")
         self.assertEqual(self.g.readCount, 2)  # cached Fuji; other brands never read
+
     def test_startup_tracks_once_and_restarts_after_shutdown(self):
         self.run_lua("dofile(pluginPath .. '/Startup.lua'); dofile(pluginPath .. '/Startup.lua')")
         self.assertEqual(len(self.g.jobs), 1)
@@ -183,15 +184,20 @@ class ControllerTests(unittest.TestCase):
         self.assertTrue(self.g.fujiRecipeController.stopped)
         self.run_lua("dofile(pluginPath .. '/Startup.lua')")
         self.assertEqual(len(self.g.jobs), 2)
+
     def test_the_panel_is_filled_for_the_active_photo(self):
         self.run_lua("controller.start(); selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
         fields = self.g.stored['recipe.JPG']
         self.assertEqual(fields.recipe, 'Reala Everyday')
-        first, second = fields.settings.split('\n')
-        self.assertTrue(first.startswith('REALA ACE'))
-        self.assertTrue(second.startswith('H '))
-        self.assertTrue(fields.details.startswith('Recette : Reala Everyday · Personnelle\nGrain '))
+        self.assertEqual(fields.source, 'Personnelle')
+        self.assertTrue(fields.settings.startswith('REALA ACE'))
+        self.assertTrue(fields.adjustments.startswith('H '))
+        self.assertTrue(fields.effects.startswith('Grain '))
+        self.assertTrue(fields.noise.startswith('Bruit '))
         self.assertIsNone(fields.note)
+        for value in fields.values():
+            self.assertNotIn('\n', value)
+
     def test_panel_fields_are_written_only_when_they_change(self):
         self.run_lua("controller.start(); selectPhoto('first.JPG', 'FUJIFILM'); step(); step(); step()")
         self.assertEqual(self.g.writeCount, 1)
@@ -214,7 +220,8 @@ class ControllerTests(unittest.TestCase):
                 fields = self.g.stored[path]
                 self.assertIsNone(fields.recipe)
                 self.assertTrue(fields.settings.startswith('REALA ACE'))
-                self.assertTrue(fields.details.startswith('Grain '))
+                self.assertTrue(fields.effects.startswith('Grain '))
+                self.assertIsNone(fields.source)
                 self.assertIsNone(fields.note)
         self.run_lua("selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
         self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
@@ -284,13 +291,17 @@ class ControllerTests(unittest.TestCase):
             "selectPhoto('eos.JPG', 'Canon'); step(); selectPhoto('gr.JPG', 'RICOH'); step(); "
             "selectPhoto('phone.JPG', 'Apple'); step()")
         stored = self.g.stored
-        self.assertEqual(stored['gx80.JPG'].settings, 'STANDARD · WB AUTO\nAuto intelligent +')
-        self.assertIn('Contraste 0 · Saturation 0 · Netteté 0', stored['gx80.JPG'].details)
+        self.assertEqual(stored['gx80.JPG'].settings, 'STANDARD · WB AUTO')
+        self.assertEqual(stored['gx80.JPG'].adjustments, 'Auto intelligent +')
+        self.assertIn('Contraste 0 · Saturation 0 · Netteté 0', stored['gx80.JPG'].note)
         self.assertIsNone(stored['gx80.JPG'].recipe)
-        self.assertEqual(stored['eos.JPG'].settings, 'STANDARD · WB AUTO\nSport')
-        self.assertEqual(stored['gr.JPG'].settings, 'WB AUTO\nPriorité ouverture')
-        self.assertEqual(stored['phone.JPG'].settings, 'Portrait')
-        self.assertIsNone(stored['phone.JPG'].details)
+        self.assertIsNone(stored['gx80.JPG'].effects)
+        self.assertEqual(stored['eos.JPG'].settings, 'STANDARD · WB AUTO')
+        self.assertEqual(stored['eos.JPG'].adjustments, 'Sport')
+        self.assertEqual(stored['gr.JPG'].settings, 'WB AUTO')
+        self.assertEqual(stored['gr.JPG'].adjustments, 'Priorité ouverture')
+        self.assertIsNone(stored['phone.JPG'].settings)
+        self.assertEqual(stored['phone.JPG'].adjustments, 'Portrait')
 
     def test_busy_catalog_is_retried_on_the_next_tick(self):
         self.run_lua("busy = true; controller.start(); selectPhoto('first.JPG', 'FUJIFILM'); step()")
@@ -379,14 +390,12 @@ class ControllerTests(unittest.TestCase):
         ''')
         fields = list(self.g.definition.metadataFieldsForPhotos.values())
         ids = [field.id for field in fields]
-        self.assertEqual(ids, ['recipe', 'settings', 'details', 'note'])  # Controller's fieldIds
+        self.assertEqual(ids, ['recipe', 'source', 'settings', 'adjustments', 'effects', 'noise', 'note'])
         self.assertTrue(all(field.title and field.readOnly for field in fields))
         prefix = self.g.info.LrToolkitIdentifier + '.'
         items = [item if isinstance(item, str) else item[1]
             for item in self.g.tagset['items'].values()]  # .items is a LuaTable method
         self.assertEqual([i for i in items if i.startswith(prefix)], [prefix + id for id in ids])
-        details = next(i for i in self.g.tagset['items'].values() if not isinstance(i, str) and i[1].endswith('details'))
-        self.assertEqual(details.height_in_lines, 2)
         self.assertEqual(self.g.info.LrMetadataTagsetFactory, 'Tagset.lua')
 
     def test_unavailable_originals_are_not_written_for_any_brand(self):
@@ -394,16 +403,19 @@ class ControllerTests(unittest.TestCase):
         for make in ['FUJIFILM', 'Panasonic', 'Canon', 'RICOH']:
             self.run_lua("selectPhoto('missing.JPG', '" + make + "'); step()")
             self.assertIsNone(self.g.stored['missing.JPG'], make)
+
     def test_recipe_name_is_given_for_fuji_only(self):
         self.run_lua("controller.start(); selectPhoto('recipe.JPG', 'FUJIFILM'); step(); "
             "selectPhoto('first.JPG', 'FUJIFILM'); step(); selectPhoto('gx80.JPG', 'Panasonic'); step()")
         self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
         self.assertEqual(self.g.stored['first.JPG'].recipe, 'Recette non identifiée')
-        self.assertIn('Aucune recette connue', self.g.stored['first.JPG'].details)
+        self.assertEqual(self.g.stored['first.JPG'].source, 'Aucune recette proche')
         self.assertIsNone(self.g.stored['gx80.JPG'].recipe)
+
     def test_fuji_model_without_make_is_still_read(self):
         self.run_lua("modelValue = 'X-T5'; controller.start(); selectPhoto('first.JPG', ''); step()")
         self.assertTrue(self.g.stored['first.JPG'].settings.startswith('PROVIA'))
+
     def test_unknown_model_values_stay_hidden(self):
         self.run_lua("info = dofile(pluginPath .. '/CameraInfo.lua')")
         for value in ['', ' ', 'Unknown', '(unknown)', 'Inconnu', 'N/A', '-', '?', '0']:

@@ -25,17 +25,20 @@ externes, sélectionner le module et cliquer sur **Charger de nouveau le module 
 ## Panneau Métadonnées
 
 Le jeu de métadonnées **Appareil photo et recette** reprend des champs de Lightroom
-(fichier, modèle, objectif, exposition, ISO, focale, date) puis quatre champs du module :
+(fichier, modèle, objectif, exposition, ISO, focale, date) puis les champs du module,
+d'une ligne chacun (Lightroom n'affiche que la première ligne d'un champ en lecture seule) :
 
-- **Recette** : nom de la recette Fuji, ou « Recette non identifiée ».
+- **Recette** : nom de la recette Fuji, ou « Recette non identifiée ». Vide pour un
+  fichier RAF : un RAW n'est pas développé avec les réglages du boîtier.
+- **Source** : origine de la recette, ou recette la plus proche et réglages qui diffèrent.
 - **Réglages** : sur Fuji, simulation, plage dynamique ou priorité DR et balance des
-  blancs, puis tons, couleur et netteté. Sur Panasonic et Canon : style, balance des
-  blancs, mode et ajustements. Sur iPhone : le mode ; sur Ricoh : la balance des
-  blancs et le mode.
-- **Détails** : source de la recette, ou recette la plus proche et réglages qui
-  diffèrent ; grain, Color Chrome, bruit, clarté…
+  blancs. Sur Panasonic et Canon : style et balance des blancs. Sur Ricoh : balance des blancs.
+- **Ajustements** : sur Fuji, hautes lumières, ombres, couleur et netteté. Sur les autres
+  marques : le mode de prise de vue et les ajustements qui s'écartent de la normale.
+- **Effets** (Fuji) : grain, Color Chrome, Color Chrome FX Bleu.
+- **Bruit, clarté** (Fuji) : réduction du bruit, clarté, décalage de balance des blancs.
 - **Remarque** : lecture dans le RAF associé, ou raison pour laquelle les réglages
-  n'ont pas été lus.
+  n'ont pas été lus ; sur Panasonic et Canon, tous les ajustements, zéros compris.
 
 Les champs se remplissent quand une photo devient la photo active. Pour remplir d'un
 coup un dossier ou une collection : sélectionner les photos, puis Bibliothèque →
@@ -49,9 +52,9 @@ ensuite de critères dans les collections dynamiques et la recherche texte, et
 Une recette est reconnue quand tous les réglages renseignés dans le CSV sont égaux ;
 une case vide n'est pas comparée (tons et plage dynamique avec la priorité DR,
 couleur en noir et blanc). Une recette qui ne diffère **que par la plage dynamique**
-(DR100/200/400/Auto) est quand même reconnue ; Détails indique alors le DR de la photo.
+(DR100/200/400/Auto) est quand même reconnue ; Source indique alors le DR de la photo.
 Les préréglages fluorescents 1, 2 et 3 et les intensités Weak et Strong de la priorité
-DR sont distingués. Si aucune recette ne correspond, Détails donne la plus proche
+DR sont distingués. Si aucune recette ne correspond, Source donne la plus proche
 (trois écarts au plus). Plusieurs recettes identiques s'affichent séparées par « / ».
 
 ### Utiliser ses propres recettes

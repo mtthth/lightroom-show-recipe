@@ -124,27 +124,30 @@ local function drText(dr)
     return dr and ('DR' .. tostring(dr)) or 'DR ?'
 end
 
--- Recipe line and detail text for a RecipeMatch.find result. A recipe that differs only by
--- its dynamic range is still named; the detail says which DR the photo used.
+-- Recipe and Source fields, one line each, for a RecipeMatch.find result. A recipe that
+-- differs only by its dynamic range is still named; Source says which DR the photo used.
+-- Without a recipe, Source names the closest one and what differs.
 function M.recipe(result)
-    local names, details = {}, {}
+    local names, sources, seen = {}, {}, {}
     local function add(recipe, note)
         names[#names + 1] = recipe.name
-        details[#details + 1] = 'Recette : ' .. recipe.name ..
-            (recipe.source and (' · ' .. recipe.source) or '') .. (note or '')
+        local source = (recipe.source or '') .. (note or '')
+        if source ~= '' and not seen[source] then
+            seen[source] = true
+            sources[#sources + 1] = source
+        end
     end
     for _, recipe in ipairs(result.matches) do add(recipe) end
     if #names == 0 then
         for _, recipe in ipairs(result.drMatches or {}) do
-            add(recipe, ' · ' .. drText(result.dr) .. ' au lieu de ' .. drText(recipe.dr))
+            add(recipe, (recipe.source and ' · ' or '') .. drText(result.dr) .. ' au lieu de ' .. drText(recipe.dr))
         end
     end
-    if #names > 0 then return table.concat(names, ' / '), table.concat(details, '\n') end
-    local detail = 'Aucune recette connue ne correspond exactement à ces réglages.'
+    if #names > 0 then return table.concat(names, ' / '), table.concat(sources, ' / ') end
     if result.near then
-        detail = detail .. '\nPlus proche : ' .. result.near.name ..
+        return 'Recette non identifiée', 'Plus proche : ' .. result.near.name ..
             ' (écarts : ' .. table.concat(result.differences, ', ') .. ')'
     end
-    return 'Recette non identifiée', detail
+    return 'Recette non identifiée', 'Aucune recette proche'
 end
 return M

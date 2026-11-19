@@ -15,7 +15,8 @@ you can use your own file instead.
 Panasonic, Canon, iPhone and Ricoh GR settings are read too.
 
 > The plug-in's interface is in French for now: *Recette* = recipe, *Réglages* = settings,
-> *Détails* = details, *Remarque* = note.
+> *Ajustements* = adjustments, *Effets* = effects, *Bruit, clarté* = noise reduction, clarity,
+> *Remarque* = note.
 
 ## Installation
 
@@ -31,16 +32,20 @@ To update, replace the folder and click **Reload Plug-in** in the Plug-in Manage
 ## The Metadata panel
 
 The **Appareil photo et recette** preset shows Lightroom's own fields (file name, model,
-lens, exposure, ISO, focal length, date), followed by four fields of the plug-in:
+lens, exposure, ISO, focal length, date), followed by the plug-in's fields, one line each
+(Lightroom shows only the first line of a read-only field):
 
-- **Recette**: the recipe name, or *Recette non identifiée* (no recipe recognized).
-- **Réglages**: on Fuji, film simulation, dynamic range or DR priority and white balance,
-  then highlight, shadow, colour and sharpness. On Panasonic and Canon: photo style, white
-  balance, shooting mode and adjustments. On iPhone: the mode; on Ricoh: white balance
-  and mode.
-- **Détails**: the recipe's source, or the closest recipe and what differs; grain, Color
-  Chrome, noise reduction, clarity…
-- **Remarque**: the settings were read from the companion RAF, or why they could not be read.
+- **Recette**: the recipe name, or *Recette non identifiée* (no recipe recognized). Empty
+  for a RAF file: a raw file is not rendered with the camera settings.
+- **Source**: where the recipe comes from, or the closest recipe and what differs.
+- **Réglages**: on Fuji, film simulation, dynamic range or DR priority and white balance.
+  On Panasonic and Canon: photo style and white balance. On Ricoh: white balance.
+- **Ajustements**: on Fuji, highlight, shadow, colour and sharpness. On other brands: the
+  shooting mode and the adjustments that differ from normal.
+- **Effets** (Fuji): grain, Color Chrome, Color Chrome FX Blue.
+- **Bruit, clarté** (Fuji): noise reduction, clarity, white balance shift.
+- **Remarque**: the settings were read from the companion RAF, or why they could not be
+  read; on Panasonic and Canon, every adjustment including those at zero.
 
 Fields are filled when a photo becomes the active photo. To fill a whole folder or
 collection at once, select the photos and choose Library → Plug-in Extras →
@@ -52,8 +57,8 @@ search, and **Recette** appears in the Library Filter's Metadata columns.
 
 A recipe is recognized when every setting given in the CSV is equal. An empty cell is not
 compared. A recipe that differs **only by its dynamic range** (DR100/200/400/Auto) is still
-recognized; *Détails* then says which DR the photo used. When no recipe matches,
-*Détails* names the closest one (at most three differences) and the settings that differ.
+recognized; *Source* then says which DR the photo used. When no recipe matches,
+*Source* names the closest one (at most three differences) and the settings that differ.
 
 ### Using your own recipes
 
@@ -84,7 +89,7 @@ UTF-8, comma-separated, one recipe per line, with this header (extra columns are
 | `grain_size` | `Small`, `Large`, or empty |
 | `color_chrome_effect`, `color_chrome_fx_blue` | `Off`, `Weak`, `Strong` (required) |
 | `sharpness`, `high_iso_nr`, `clarity` | Numbers |
-| `source` | Shown in *Détails* |
+| `source` | Shown in *Source* |
 
 The columns `mono_color_wc`, `mono_color_mg`, `iso_max`, `exposure_comp`, `usage` and
 `notes` are kept for reference and not compared.
