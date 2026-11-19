@@ -208,23 +208,21 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(self.g.writeCount, 2)  # nothing to show for a camera without a reader
         self.assertIsNone(self.g.stored['sony.JPG'])
 
-    def test_a_raw_file_gets_its_settings_but_no_recipe(self):
-        reala = ("{ model = 'X-T5', tags = { [0x1401] = 0xb00, [0x1003] = 0x80, [0x1402] = 0, "
-            "[0x140b] = 200, [0x1002] = 0, [0x100a] = {0, 0}, [0x1041] = 0, [0x1040] = 0, [0x1001] = 3, "
-            "[0x100e] = 0x280, [0x100f] = 0, [0x1047] = 32, [0x104c] = 16, [0x1048] = 32, [0x104e] = 32 } }")
-        for path in ['DSCF5790.RAF', 'dscf5791.raf']:
+    def test_a_raw_file_gets_its_recipe_like_a_jpeg(self):
+        # The settings of a RAF seen in Lightroom: Kodak T-Max P3200 in recipes.csv.
+        tmax = ("{ model = 'X-T5', tags = { [0x1003] = 0x500, [0x1401] = 0, [0x1402] = 1, "
+            "[0x1403] = 400, [0x1002] = 0xff0, [0x1005] = 5500, [0x100a] = {80, 140}, [0x1041] = -16, "
+            "[0x1040] = -48, [0x1001] = 4, [0x100e] = 0x2e0, [0x100f] = 1000, [0x1047] = 64, "
+            "[0x104c] = 32, [0x1048] = 0, [0x104e] = 0 } }")
+        for path in ['DSCF5769.RAF', 'dscf5770.raf', 'DSCF5771.JPG']:
             with self.subTest(path=path):
-                self.run_lua("stored['" + path + "'] = { recipe = 'Ancienne recette' }; "
-                    "readOverrides['" + path + "'] = function() return " + reala + " end; "
+                self.run_lua("readOverrides['" + path + "'] = function() return " + tmax + " end; "
                     "controller.start(); selectPhoto('" + path + "', 'FUJIFILM'); step()")
                 fields = self.g.stored[path]
-                self.assertIsNone(fields.recipe)
-                self.assertTrue(fields.settings.startswith('REALA ACE'))
-                self.assertTrue(fields.effects.startswith('Grain '))
-                self.assertIsNone(fields.source)
+                self.assertEqual(fields.recipe, 'Kodak T-Max P3200')
+                self.assertEqual(fields.settings, 'ACROS · DR400 · WB 5500 K · R +4 / B +7')
+                self.assertEqual(fields.adjustments, 'H +1 · S +3 · Couleur N/B · Netteté +2')
                 self.assertIsNone(fields.note)
-        self.run_lua("selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
-        self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
 
     def test_offline_original_keeps_what_an_earlier_reading_wrote(self):
         self.run_lua("stored['missing.JPG'] = { recipe = 'Reala Everyday', settings = 'REALA ACE' }; "

@@ -28,8 +28,8 @@ Le jeu de métadonnées **Appareil photo et recette** reprend des champs de Ligh
 (fichier, modèle, objectif, exposition, ISO, focale, date) puis les champs du module,
 d'une ligne chacun (Lightroom n'affiche que la première ligne d'un champ en lecture seule) :
 
-- **Recette** : nom de la recette Fuji, ou « Recette non identifiée ». Vide pour un
-  fichier RAF : un RAW n'est pas développé avec les réglages du boîtier.
+- **Recette** : nom de la recette Fuji, ou « Recette non identifiée », pour les JPEG
+  comme pour les RAF.
 - **Source** : origine de la recette, ou recette la plus proche et réglages qui diffèrent.
 - **Réglages** : sur Fuji, simulation, plage dynamique ou priorité DR et balance des
   blancs. Sur Panasonic et Canon : style et balance des blancs. Sur Ricoh : balance des blancs.
@@ -84,8 +84,6 @@ chacune.
   catalogue si le module est retiré.
 - Fuji : lecture des EXIF/MakerNotes des JPEG et de l'aperçu JPEG des RAF. Si un JPEG
   a perdu ses MakerNotes, le RAF de même nom dans le même dossier est lu à la place.
-  Une photo RAF reçoit ses réglages mais pas de recette : un RAW n'est pas développé
-  avec eux, seul le JPEG du boîtier l'est.
   Décalages de balance des blancs validés sur X-T5 ; autres générations à vérifier.
   Les réglages N&B WC/MG ne sont pas comparés.
 - Panasonic : JPEG uniquement (les RW2 ne sont pas lus). Le codage du bruit varie

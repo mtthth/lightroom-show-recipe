@@ -60,10 +60,8 @@ function M.readEntry(photo, path)
     local ok, message = pcall(function()
         if camera.fuji then
             entry.data, entry.code, entry.message = Reader.readWithCompanion(path)
-            -- A raw file is not rendered with the camera settings: they describe the shot,
-            -- but no recipe applies to it. Only the camera's JPEG carries one.
-            entry.raw = type(path) == 'string' and path:lower():match('%.raf$') ~= nil
-            if entry.data and not entry.raw then
+            -- A RAF records the settings of the shot like the camera's JPEG: its recipe is named too.
+            if entry.data then
                 entry.match = RecipeMatch.find(RecipeBook.current().recipes, Format.settings(entry.data))
             end
         elseif makerNotes[camera.brand] then

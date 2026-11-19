@@ -35,8 +35,8 @@ The **Appareil photo et recette** preset shows Lightroom's own fields (file name
 lens, exposure, ISO, focal length, date), followed by the plug-in's fields, one line each
 (Lightroom shows only the first line of a read-only field):
 
-- **Recette**: the recipe name, or *Recette non identifiée* (no recipe recognized). Empty
-  for a RAF file: a raw file is not rendered with the camera settings.
+- **Recette**: the recipe name, or *Recette non identifiée* (no recipe recognized), for
+  JPEG and RAF files alike.
 - **Source**: where the recipe comes from, or the closest recipe and what differs.
 - **Réglages**: on Fuji, film simulation, dynamic range or DR priority and white balance.
   On Panasonic and Canon: photo style and white balance. On Ricoh: white balance.
@@ -101,9 +101,7 @@ The columns `mono_color_wc`, `mono_color_mg`, `iso_max`, `exposure_comp`, `usage
   undo history entry, nothing in XMP or exports. A field is written only when its value
   changes. The fields stay in the catalog if the plug-in is removed.
 - **Fuji**: EXIF/MakerNotes of JPEG files and of the JPEG preview in RAF files. If a JPEG has
-  lost its MakerNotes, the RAF with the same name in the same folder is read instead. A RAF
-  photo gets its settings but no recipe: a raw file is not rendered with them, only the
-  camera's JPEG is. White
+  lost its MakerNotes, the RAF with the same name in the same folder is read instead. White
   balance shifts are validated on the X-T5; other generations still need checking.
   Monochrome WC/MG are not compared.
 - **Panasonic**: JPEG only (RW2 is not read). **Canon**: JPEG only (CR2/CR3 are not read).
