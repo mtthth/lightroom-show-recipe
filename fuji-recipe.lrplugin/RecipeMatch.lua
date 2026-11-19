@@ -13,6 +13,7 @@ local fields = {
     { 'sharpness', 'Netteté' }, { 'noise', 'Bruit' }, { 'clarity', 'Clarté' },
 }
 local nearLimit = 3
+local drLabel = 'Plage dynamique'
 
 local function same(a, b)
     if type(a) == 'number' and type(b) == 'number' then return math.abs(a - b) < 1e-6 end
@@ -31,14 +32,18 @@ function M.differences(recipe, settings)
     return result
 end
 
--- matches: recipes with no difference. Otherwise near: the recipe differing by
--- the fewest settings (at most nearLimit), with their labels in differences.
+-- matches: recipes with no difference. drMatches: recipes whose only difference is the
+-- dynamic range (DR100/200/400/Auto), still named since the look is the same recipe; the
+-- photo's own value is in dr. Otherwise near: the recipe differing by the fewest settings
+-- (at most nearLimit), with their labels in differences.
 function M.find(recipes, settings)
-    local result = { matches = {} }
+    local result = { matches = {}, drMatches = {}, dr = settings.dr }
     for _, recipe in ipairs(recipes) do
         local differences = M.differences(recipe, settings)
         if #differences == 0 then
             result.matches[#result.matches + 1] = recipe
+        elseif #differences == 1 and differences[1] == drLabel then
+            result.drMatches[#result.drMatches + 1] = recipe
         elseif #differences <= nearLimit and
             (not result.near or #differences < #result.differences) then
             result.near, result.differences = recipe, differences

@@ -8,7 +8,7 @@ local LrTasks = import 'LrTasks'
 local Reader = dofile(LrPathUtils.child(_PLUGIN.path, 'FujiReader.lua'))
 local Format = dofile(LrPathUtils.child(_PLUGIN.path, 'FujiFormat.lua'))
 local RecipeMatch = dofile(LrPathUtils.child(_PLUGIN.path, 'RecipeMatch.lua'))
-local Recipes = dofile(LrPathUtils.child(_PLUGIN.path, 'Recipes.lua'))
+local RecipeBook = dofile(LrPathUtils.child(_PLUGIN.path, 'RecipeBook.lua'))
 local PanasonicReader = dofile(LrPathUtils.child(_PLUGIN.path, 'PanasonicReader.lua'))
 local PanasonicFormat = dofile(LrPathUtils.child(_PLUGIN.path, 'PanasonicFormat.lua'))
 local CanonReader = dofile(LrPathUtils.child(_PLUGIN.path, 'CanonReader.lua'))
@@ -56,7 +56,9 @@ function M.readEntry(photo, path)
     local ok, message = pcall(function()
         if camera.fuji then
             entry.data, entry.code, entry.message = Reader.readWithCompanion(path)
-            if entry.data then entry.match = RecipeMatch.find(Recipes, Format.settings(entry.data)) end
+            if entry.data then
+                entry.match = RecipeMatch.find(RecipeBook.current().recipes, Format.settings(entry.data))
+            end
         elseif makerNotes[camera.brand] then
             entry.data, entry.code, entry.message = makerNotes[camera.brand].read(path)
         elseif modeBrands[camera.brand] then
@@ -158,6 +160,9 @@ function M.start()
                 state.force, lastPath = false, path
                 syncedKey = nil -- A fresh reading can change fields without changing the photo id.
                 currentEntry = nil
+                -- An edited or newly chosen recipe file makes every cached match out of date.
+                local book = RecipeBook.current()
+                if book ~= state.book then cache, cacheSize, state.book = {}, 0, book end
                 if path then
                     currentEntry = not force and cache[path]
                     if currentEntry and currentEntry.retryAt and now >= currentEntry.retryAt then

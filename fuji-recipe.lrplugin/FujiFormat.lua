@@ -119,12 +119,25 @@ function M.settings(data)
     }
 end
 
--- Recipe line and detail text for a RecipeMatch.find result.
+local function drText(dr)
+    if dr == 'auto' then return 'DR AUTO' end
+    return dr and ('DR' .. tostring(dr)) or 'DR ?'
+end
+
+-- Recipe line and detail text for a RecipeMatch.find result. A recipe that differs only by
+-- its dynamic range is still named; the detail says which DR the photo used.
 function M.recipe(result)
     local names, details = {}, {}
-    for i, recipe in ipairs(result.matches) do
-        names[i] = recipe.name
-        details[i] = 'Recette : ' .. recipe.name .. (recipe.source and (' · ' .. recipe.source) or '')
+    local function add(recipe, note)
+        names[#names + 1] = recipe.name
+        details[#details + 1] = 'Recette : ' .. recipe.name ..
+            (recipe.source and (' · ' .. recipe.source) or '') .. (note or '')
+    end
+    for _, recipe in ipairs(result.matches) do add(recipe) end
+    if #names == 0 then
+        for _, recipe in ipairs(result.drMatches or {}) do
+            add(recipe, ' · ' .. drText(result.dr) .. ' au lieu de ' .. drText(recipe.dr))
+        end
     end
     if #names > 0 then return table.concat(names, ' / '), table.concat(details, '\n') end
     local detail = 'Aucune recette connue ne correspond exactement à ces réglages.'

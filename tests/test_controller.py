@@ -13,7 +13,7 @@ class ControllerTests(unittest.TestCase):
         self.lua = LuaRuntime(unpack_returned_tuples=True)
         self.lua.globals().pluginPath = str(ROOT / 'fuji-recipe.lrplugin').replace('\\', '/')
         self.lua.execute('''
-            jobs = {}
+            jobs, prefs, recipeStamp = {}, {}, 0
             readCount, writeCount = 0, 0
             now, readOverrides = 0, {}
             -- Plug-in fields by photo id; busy makes the catalog refuse write access.
@@ -95,6 +95,10 @@ class ControllerTests(unittest.TestCase):
                     }
                 end },
                 LrDate = { currentTime = function() return now end },
+                LrFileUtils = { fileAttributes = function(path)
+                    return { fileModificationDate = recipeStamp }
+                end },
+                LrPrefs = { prefsForPlugin = function() return prefs end },
                 LrDialogs = {
                     attachErrorDialogToFunctionContext = function() end,
                     message = function(title, text) messages[#messages + 1] = text end,
@@ -333,6 +337,23 @@ class ControllerTests(unittest.TestCase):
         self.assertIn('illisibles', self.g.stored['bad.JPG'].note)
         self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala Everyday')
 
+    def test_chosen_recipe_file_is_used_and_reread_when_it_changes(self):
+        import tempfile
+        source = (ROOT / 'fuji-recipe.lrplugin' / 'recipes.csv').read_text(encoding='utf-8')
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'mes recettes.csv'
+            path.write_text(source.replace('Reala Everyday,', 'Ma Reala,'), encoding='utf-8')
+            self.g.chosen = str(path).replace('\\', '/')
+            self.run_lua("prefs.recipesPath = chosen; controller.start(); "
+                "selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
+            self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Ma Reala')
+            path.write_text(source.replace('Reala Everyday,', 'Reala du jour,'), encoding='utf-8')
+            self.run_lua("recipeStamp = 1; selectPhoto('first.JPG', 'FUJIFILM'); step(); "
+                "selectPhoto('recipe.JPG', 'FUJIFILM'); step()")
+            self.assertEqual(self.g.stored['recipe.JPG'].recipe, 'Reala du jour')
+            self.run_lua("prefs.recipesPath = chosen .. '.absent'; selectPhoto('second.JPG', 'FUJIFILM'); step()")
+            self.assertEqual(self.g.stored['second.JPG'].recipe, 'Recette non identifiée')
+
     def test_tagset_lists_the_declared_fields(self):
         self.run_lua('''
             info = dofile(pluginPath .. '/Info.lua')
@@ -344,9 +365,11 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(ids, ['recipe', 'settings', 'details', 'note'])  # Controller's fieldIds
         self.assertTrue(all(field.title and field.readOnly for field in fields))
         prefix = self.g.info.LrToolkitIdentifier + '.'
-        items = [item for item in self.g.tagset['items'].values()  # .items is a LuaTable method
-            if isinstance(item, str) and item.startswith(prefix)]
-        self.assertEqual(items, [prefix + id for id in ids])
+        items = [item if isinstance(item, str) else item[1]
+            for item in self.g.tagset['items'].values()]  # .items is a LuaTable method
+        self.assertEqual([i for i in items if i.startswith(prefix)], [prefix + id for id in ids])
+        details = next(i for i in self.g.tagset['items'].values() if not isinstance(i, str) and i[1].endswith('details'))
+        self.assertEqual(details.height_in_lines, 2)
         self.assertEqual(self.g.info.LrMetadataTagsetFactory, 'Tagset.lua')
 
     def test_unavailable_originals_are_not_written_for_any_brand(self):

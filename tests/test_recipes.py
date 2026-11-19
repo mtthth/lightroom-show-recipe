@@ -1,4 +1,4 @@
-"""Recipes.lua must follow fuji-recipes.csv, and each recipe must be found from its MakerNotes."""
+"""recipes.csv must read without errors, and each recipe must be found from its MakerNotes."""
 import csv
 from pathlib import Path
 import re
@@ -7,9 +7,9 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / '.test-deps'))
-sys.path.insert(0, str(ROOT / 'scripts'))
 from lupa.lua51 import LuaRuntime
-import build_recipes
+
+CSV = ROOT / 'fuji-recipe.lrplugin' / 'recipes.csv'
 
 # Independent encoding of the CSV vocabulary as MakerNotes values (X-T5).
 FILM_MODES = {
@@ -77,18 +77,24 @@ class RecipeTests(unittest.TestCase):
         plugin = ROOT / 'fuji-recipe.lrplugin'
         self.format = self.lua.execute((plugin / 'FujiFormat.lua').read_text(encoding='utf-8'))
         self.match = self.lua.execute((plugin / 'RecipeMatch.lua').read_text(encoding='utf-8'))
-        self.recipes = self.lua.execute((plugin / 'Recipes.lua').read_text(encoding='utf-8'))
-        with open(ROOT / 'fuji-recipes.csv', encoding='utf-8', newline='') as source:
+        self.csv = self.lua.execute((plugin / 'RecipeCsv.lua').read_text(encoding='utf-8'))
+        self.recipes, errors = self.csv.parse(CSV.read_text(encoding='utf-8'))
+        self.assertEqual(list(errors.values()), [])
+        with open(CSV, encoding='utf-8', newline='') as source:
             self.rows = list(csv.DictReader(source))
 
     def find(self, tags):
         data = self.lua.table_from({'tags': self.lua.table_from(tags)})
         return self.match.find(self.recipes, self.format.settings(data))
 
-    def test_recipes_lua_follows_the_csv(self):
-        generated = (ROOT / 'fuji-recipe.lrplugin' / 'Recipes.lua').read_text(encoding='utf-8')
-        self.assertEqual(generated, build_recipes.build(self.rows),
-            'Run python scripts/build_recipes.py')
+    def test_lua_reads_the_csv_like_python(self):
+        parsed = self.csv.rows(CSV.read_text(encoding='utf-8'))
+        with open(CSV, encoding='utf-8', newline='') as source:
+            expected = [row for row in csv.reader(source)]
+        self.assertEqual([list(row.values()) for row in parsed.values()], expected)
+        text = 'a,b,c\r\n"x, y","say ""hi""",\r\n"multi\nline",2,3'
+        rows = [list(row.values()) for row in self.csv.rows(text).values()]
+        self.assertEqual(rows, [['a', 'b', 'c'], ['x, y', 'say "hi"', ''], ['multi\nline', '2', '3']])
 
     def test_each_recipe_is_found_from_its_makernotes(self):
         self.assertEqual(len(self.recipes), len(self.rows))
@@ -191,23 +197,54 @@ class RecipeTests(unittest.TestCase):
 
     def test_csv_vocabulary_matches_the_makernotes_decoding(self):
         # Every film and white balance the builder accepts decodes to its label.
-        for name, label in build_recipes.FILMS.items():
+        for name, label in self.csv.films.items():
             tags = {0x1003: MONOCHROME[name]} if name in MONOCHROME else {0x1401: FILM_MODES[name]}
             settings = self.format.settings(self.lua.table_from({'tags': self.lua.table_from(tags)}))
             self.assertEqual(settings.film, label, name)
-        for name, kind in build_recipes.WHITE.items():
+        for name, kind in self.csv.whites.items():
             tags = {0x1002: WHITE[name]}
             settings = self.format.settings(self.lua.table_from({'tags': self.lua.table_from(tags)}))
             self.assertEqual(settings.wb, kind, name)
 
-    def test_builder_rejects_unknown_or_contradictory_values(self):
-        row = dict(self.rows[0])
-        for column, value in [('film_simulation', 'Velvia'), ('white_balance', 'Cloudy'),
-                ('grain_effect', ''), ('clarity', 'beaucoup')]:
-            with self.assertRaises(SystemExit, msg=column):
-                build_recipes.convert({**row, column: value})
-        with self.assertRaises(SystemExit):
-            build_recipes.convert({**row, 'dr_priority': 'Strong'})
+    def test_bad_lines_are_left_out_and_reported(self):
+        header = ','.join(self.rows[0].keys())
+        def line(**changes):
+            row = dict(self.rows[0], **changes)
+            return ','.join('"' + v.replace('"', '""') + '"' for v in row.values())
+        bad = [('film_simulation', 'Velvia'), ('white_balance', 'Cloudy'), ('grain_effect', ''),
+               ('clarity', 'beaucoup'), ('dr_priority', 'Strong')]
+        text = '\n'.join([header, line(nom='Bonne')] + [line(nom='Mauvaise ' + c, **{c: v}) for c, v in bad]
+                         + [line(nom='Bonne'), ''])
+        recipes, errors = self.csv.parse(text)
+        self.assertEqual([r.name for r in recipes.values()], ['Bonne'])
+        errors = list(errors.values())
+        self.assertEqual(len(errors), len(bad) + 1)
+        self.assertIn('Ligne 3 (Mauvaise film_simulation) : film_simulation « Velvia » inconnu', errors[0])
+        self.assertIn('plage dynamique', errors[4])
+        self.assertIn('déjà utilisé', errors[5])
+        self.assertEqual(list(self.csv.parse('')[1].values()), ['fichier vide'])
+
+    def test_a_recipe_differing_only_by_its_dr_is_still_named(self):
+        row = next(r for r in self.rows if r['dynamic_range'] == 'DR400' and r['dr_priority'] == 'Off')
+        tags = tags_for(self.lua, row)
+        tags[0x1403] = 100
+        result = self.find(tags)
+        self.assertEqual(len(result.matches), 0)
+        line, detail = self.format.recipe(result)
+        self.assertEqual(line, row['nom'])
+        self.assertIn(' · DR100 au lieu de DR400', detail)
+        tags[0x1001] = SHARPNESS[4] if row['sharpness'] != '4' else SHARPNESS[-4]
+        self.assertEqual(self.format.recipe(self.find(tags))[0], 'Recette non identifiée')
+
+    def test_an_exact_recipe_wins_over_one_differing_by_dr(self):
+        row = next(r for r in self.rows if r['dynamic_range'] == 'DR400' and r['dr_priority'] == 'Off')
+        exact = self.csv.convert(self.lua.table_from(dict(row, nom='DR100', dynamic_range='DR100')))
+        recipes = self.lua.table_from([self.recipes[1 + self.rows.index(row)], exact])
+        tags = tags_for(self.lua, row)
+        tags[0x1403] = 100
+        data = self.lua.table_from({'tags': self.lua.table_from(tags)})
+        line, _ = self.format.recipe(self.match.find(recipes, self.format.settings(data)))
+        self.assertEqual(line, 'DR100')
 
 
 if __name__ == '__main__':
